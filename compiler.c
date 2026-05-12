@@ -3,37 +3,30 @@
 #include <string.h>
 #include <ctype.h>
 
-// ======================
-// 1. 词法分析：Token 类型
-// ======================
 typedef enum {
-    TOKEN_NUMBER,  // 数字
-    TOKEN_PLUS,    // +
-    TOKEN_MINUS,   // -
-    TOKEN_MUL,     // *
-    TOKEN_DIV,     // /
-    TOKEN_LPAREN,  // (
-    TOKEN_RPAREN,  // )
-    TOKEN_EOF      // 结束
+    TOKEN_NUMBER,
+    TOKEN_PLUS,
+    TOKEN_MINUS,
+    TOKEN_MUL,
+    TOKEN_DIV,
+    TOKEN_LPAREN,
+    TOKEN_RPAREN,
+    TOKEN_EOF
 } TokenType;
 
 typedef struct {
     TokenType type;
-    int value;  // 数字的值
+    int value;
 } Token;
 
-// 当前 token
 Token currentToken;
-// 源代码字符串
 const char* code;
 int pos = 0;
 
-// 跳过空格
 void skipWhitespace() {
     while (code[pos] && isspace(code[pos])) pos++;
 }
 
-// 获取下一个 Token
 void nextToken() {
     skipWhitespace();
     char c = code[pos];
@@ -54,7 +47,6 @@ void nextToken() {
         return;
     }
 
-    // 运算符
     switch (c) {
         case '+': currentToken.type = TOKEN_PLUS; break;
         case '-': currentToken.type = TOKEN_MINUS; break;
@@ -63,20 +55,16 @@ void nextToken() {
         case '(': currentToken.type = TOKEN_LPAREN; break;
         case ')': currentToken.type = TOKEN_RPAREN; break;
         default:
-            printf("错误：未知字符 %c\n", c);
+            printf("Error: unknown character %c\n", c);
             exit(1);
     }
     pos++;
 }
 
-// ======================
-// 2. 语法分析 + 计算
-// ======================
 int parseFactor();
 int parseTerm();
 int parseExpr();
 
-// 表达式：加减
 int parseExpr() {
     int left = parseTerm();
     while (currentToken.type == TOKEN_PLUS || currentToken.type == TOKEN_MINUS) {
@@ -89,7 +77,6 @@ int parseExpr() {
     return left;
 }
 
-// 项：乘除
 int parseTerm() {
     int left = parseFactor();
     while (currentToken.type == TOKEN_MUL || currentToken.type == TOKEN_DIV) {
@@ -102,14 +89,13 @@ int parseTerm() {
     return left;
 }
 
-// 因子：数字 / 括号
 int parseFactor() {
     int val;
     if (currentToken.type == TOKEN_LPAREN) {
         nextToken();
         val = parseExpr();
         if (currentToken.type != TOKEN_RPAREN) {
-            printf("错误：缺少右括号\n");
+            printf("Error: missing closing parenthesis\n");
             exit(1);
         }
         nextToken();
@@ -119,12 +105,11 @@ int parseFactor() {
         nextToken();
         return val;
     } else {
-        printf("语法错误\n");
+        printf("Syntax error\n");
         exit(1);
     }
 }
 
-// 编译并运行
 int compile(const char* sourceCode) {
     code = sourceCode;
     pos = 0;
@@ -132,20 +117,17 @@ int compile(const char* sourceCode) {
     return parseExpr();
 }
 
-// ======================
-// 主函数：测试编译器
-// ======================
 int main() {
-    printf("=== C 语言迷你编译器 ===\n\n");
+    printf("=== C Mini Compiler ===\n\n");
 
     const char* test1 = "1 + 2 * 3";
-    printf("表达式：%s\n结果：%d\n\n", test1, compile(test1));
+    printf("Expression: %s\nResult: %d\n\n", test1, compile(test1));
 
     const char* test2 = "(10 - 4) / 2";
-    printf("表达式：%s\n结果：%d\n\n", test2, compile(test2));
+    printf("Expression: %s\nResult: %d\n\n", test2, compile(test2));
 
     const char* test3 = "5 * (2 + 8)";
-    printf("表达式：%s\n结果：%d\n\n", test3, compile(test3));
+    printf("Expression: %s\nResult: %d\n\n", test3, compile(test3));
 
     return 0;
 }
